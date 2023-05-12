@@ -32,7 +32,10 @@ def delete_puppy(name):
 
 
 @puppy_blueprint.route('/puppies', methods=['GET'])
-@jwt_required()
 def get_all_puppies():
     puppies = Puppy.query.all()
-    return jsonify([pup.json() for pup in puppies])
+    if puppies:    
+        all_puppies = [{'name': pups.name} for pups in puppies]
+        return jsonify(all_puppies)
+    else:
+        return jsonify({'name': None}), 404
