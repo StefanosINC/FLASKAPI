@@ -11,13 +11,20 @@ def get_puppy(name):
         return jsonify(pup.json())
     else:
         return jsonify({'name': None}), 404
-
+    
 @puppy_blueprint.route('/puppies/create/<string:puppy_name>/<string:puppy_type>', methods=['POST'])
-def create_puppy(puppy_name, puppy_type):
-    pup = Puppy(puppy_name=puppy_name, puppy_type=puppy_type)
+def create_puppy(puppy_name, puppy_type, user_id=None):
+    if user_id is not None:
+        pup = Puppy(puppy_name=puppy_name, puppy_type=puppy_type, user_id=user_id)
+    else:
+        pup = Puppy(puppy_name=puppy_name, puppy_type=puppy_type)
+    
     db.session.add(pup)
     db.session.commit()
-    return jsonify({'id': pup.id, 'puppy': pup.json()})
+    
+    return jsonify({'id': pup.puppy_id, 'puppy': pup.json()})
+
+
 
 @puppy_blueprint.route('/puppies/delete/<string:name>', methods=['DELETE'])
 def delete_puppy(name):
@@ -34,8 +41,8 @@ def delete_puppy(name):
 def get_all_puppies():
     puppies = Puppy.query.all()
     if puppies:    
-        all_puppies = [{'puppy_name': pups.puppy_name} for pups in puppies]
-        return jsonify(all_puppies)
+        puppyies_list = [puppies.json() for puppies in puppies]
+        return jsonify(puppyies_list)
     else:
         return jsonify({'name': None}), 404
 
