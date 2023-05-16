@@ -4,6 +4,7 @@ from Models.UserModel import User
 from flask import jsonify, abort
 from Database.database import db
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError
 class UserService: 
     def get_userById(id):
         try:
@@ -31,17 +32,21 @@ class UserService:
             db.session.add(user)
             db.session.commit()
             return jsonify({'id': user.id, 'user': user.json()})
-        except ValueError as error:
+        
+        except (ValueError, NoResultFound, IntegrityError) as error:
+            
             abort(400, str(error))
 
     def is_valid_email(email):
         if not validate_email(email):
             raise ValueError('Invalid Email. This does not exist.')
-
+        else:
+            return email
     def is_valid_username(username):
         if len(username) > 12:
             raise ValueError('Invalid Username. Maximum length exceeded.')
-
+        return username
+    
     def is_valid_password(password):
     # Check minimum length of 8 characters
         if len(password) < 8:
@@ -64,7 +69,7 @@ class UserService:
             raise ValueError('Invalid Password. At least one special character is required.')
     
     # All conditions met, password is strong
-        return True
+        return password
 
     def return_all_users():
 
@@ -100,7 +105,7 @@ class UserService:
                 return jsonify({'message': 'User information updated successfully'})
             else:
                 raise NoResultFound('Attempted to update a non existent user')
-        except NoResultFound as error:
+        except (NoResultFound, ValueError) as error:
             abort(400, str(error))
     
     
