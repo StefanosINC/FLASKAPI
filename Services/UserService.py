@@ -5,6 +5,7 @@ from flask import jsonify, abort
 from Database.database import db
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
+import sqlite3
 class UserService: 
     def get_userById(id):
         try:
@@ -34,8 +35,13 @@ class UserService:
             return jsonify({'id': user.id, 'user': user.json()})
         
         except (ValueError, NoResultFound, IntegrityError) as error:
-            
-            abort(400, str(error))
+            if isinstance(error, IntegrityError):
+                error_message = str(error)
+                print(f"ERROR MESSAGE: {error_message}")
+                if '(sqlite3.IntegrityError)' in error_message:
+                    abort(400, "Username already exists. Please choose a different username.")
+        abort(400, str(error))
+
 
     def is_valid_email(email):
         if not validate_email(email):
