@@ -1,11 +1,14 @@
 from validate_email import validate_email
 import re
 from Models.UserModel import User
-from flask import jsonify, abort
+from flask import jsonify, abort, request
 from Database.database import db
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 import sqlite3
+import json
+from flask_jwt import jwt
+from Authentication.authenticate import Auth
 class UserService: 
     def get_userById(id):
         try:
@@ -38,9 +41,12 @@ class UserService:
             if isinstance(error, IntegrityError):
                 error_message = str(error)
                 print(f"ERROR MESSAGE: {error_message}")
-                if '(sqlite3.IntegrityError)' in error_message:
+                if 'sqlite3.IntegrityError) UNIQUE constraint failed: users.username' in error_message:
                     abort(400, "Username already exists. Please choose a different username.")
+                if '(sqlite3.IntegrityError) UNIQUE constraint failed: users.email' in error_message:
+                    abort(400, 'That email already exists. Please choose a different email')
         abort(400, str(error))
+       
 
 
     def is_valid_email(email):
@@ -83,6 +89,7 @@ class UserService:
             users = User.query.all()
             if users:
                 user_list = [user.json() for user in users]
+                
                 return jsonify(user_list)
             else:
                 raise NoResultFound('You attempted to query an empty database of users')
@@ -114,4 +121,28 @@ class UserService:
         except (NoResultFound, ValueError) as error:
             abort(400, str(error))
     
+
+
+    def AccountCredentials():
+        UserData = UserService.return_all_users()
+        formatted_data = json.loads(UserData.data)
+        credentialsKey = []
+        for item in formatted_data:
+            username = item["user_info"]["username"]
+            password = item["user_info"]["password_hash"]
+            credentialsKey.append({"username": username, "password": password})
+        return credentialsKey
     
+
+    def login(username, password):
+       
+        if not username or not password:
+            return jsonify({'message': 'Missing username or password'}), 400
+
+        user = Auth.authenticate(username, password)
+        if user:
+        # Generate the JWT token
+            access_token = jwt.jwt_encode_callback(Auth.identity(user))
+            return jsonify({'access_token': access_token.decode('utf-8')})
+        else:
+            return jsonify({'message': 'Invalid credentials'}), 401

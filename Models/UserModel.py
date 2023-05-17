@@ -33,4 +33,7 @@ class User(db.Model, UserMixin):
         },
         
     }
+    def __str__(self):
+        return f"user ID: {self.id}"
+    
     

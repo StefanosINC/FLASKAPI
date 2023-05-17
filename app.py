@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_jwt import JWT
-from Authentication.secure_check import authenticate, identity
+from Services.UserService import authenticate, identity
 from Database.database import initialize_db
 from Controller.BlogController import blog_Blueprint
 from Controller.UserController import user_blueprint
