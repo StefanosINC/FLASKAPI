@@ -28,7 +28,7 @@ def delete_user_by_Id(id):
 def update_user_information(id, email, username, password):
     return UserService.update_user_information(id, email, username, password)
 
-@user_blueprint.route('/user/<string:username>/<string:password>', methods= ['POST'])
+@user_blueprint.route('/user/login/<string:username>/<string:password>', methods= ['POST'])
 def login_user(username, password):
     return UserService.login(username, password)
 

@@ -7,8 +7,17 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 import sqlite3
 import json
-from flask_jwt import jwt
-from Authentication.authenticate import Auth
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import JWTManager, create_access_token
+from flask import Flask
+from flask_jwt import JWT
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'mysecretkey'  # Set your own secret key
+
+jwt = JWTManager(app)
+
 class UserService: 
     def get_userById(id):
         try:
@@ -37,14 +46,16 @@ class UserService:
             db.session.commit()
             return jsonify({'id': user.id, 'user': user.json()})
         
-        except (ValueError, NoResultFound, IntegrityError) as error:
+        except (NoResultFound, IntegrityError) as error:
             if isinstance(error, IntegrityError):
-                error_message = str(error)
-                print(f"ERROR MESSAGE: {error_message}")
                 if 'sqlite3.IntegrityError) UNIQUE constraint failed: users.username' in error_message:
                     abort(400, "Username already exists. Please choose a different username.")
                 if '(sqlite3.IntegrityError) UNIQUE constraint failed: users.email' in error_message:
                     abort(400, 'That email already exists. Please choose a different email')
+        except (ValueError) as valueError:
+            abort(400, str(valueError))
+        except (NoResultFound) as res:
+            abort(400, str(res))
         abort(400, str(error))
        
 
@@ -57,6 +68,8 @@ class UserService:
     def is_valid_username(username):
         if len(username) > 12:
             raise ValueError('Invalid Username. Maximum length exceeded.')
+        if len(username) < 6:
+            raise ValueError('Username must exceed 6 charachters')
         return username
     
     def is_valid_password(password):
@@ -121,8 +134,6 @@ class UserService:
         except (NoResultFound, ValueError) as error:
             abort(400, str(error))
     
-
-
     def AccountCredentials():
         UserData = UserService.return_all_users()
         formatted_data = json.loads(UserData.data)
@@ -133,16 +144,43 @@ class UserService:
             credentialsKey.append({"username": username, "password": password})
         return credentialsKey
     
-
     def login(username, password):
        
-        if not username or not password:
-            return jsonify({'message': 'Missing username or password'}), 400
-
-        user = Auth.authenticate(username, password)
-        if user:
+        try:
+            UserService.is_valid_username(username)
+            UserService.is_valid_password(password)
+            user = UserService.authenticate(username, password)
+            if user:
         # Generate the JWT token
-            access_token = jwt.jwt_encode_callback(Auth.identity(user))
-            return jsonify({'access_token': access_token.decode('utf-8')})
+                access_token = create_access_token(identity=user.id)
+                return jsonify({'access_token': access_token})
+            else:
+                return jsonify({'message': 'Invalid credentials'}), 401
+        except(ValueError) as error:
+            abort(400, str(error))
+    def authenticate(username, password):
+    ## check if exists 
+    # if so return user
+     try:
+        user = User.query.filter_by(username=username).first()
+        if user is not None:
+            if check_password_hash(user.password_hash, password):
+                return user
+            else:
+                raise ValueError("Invalid password")
         else:
-            return jsonify({'message': 'Invalid credentials'}), 401
+            raise ValueError("Invalid username")
+     except (SQLAlchemyError, ValueError) as error:
+        abort(400, str(error))
+
+    def identity(payload):
+     user_id = payload['identity']
+     try:
+        user = User.query.get(user_id)
+        if user:
+            return user
+     except SQLAlchemyError as e:
+        # Handle database errors
+        print(e)
+     return None
+    
