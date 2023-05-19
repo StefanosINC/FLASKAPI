@@ -1,3 +1,4 @@
+import jwt
 from validate_email import validate_email
 import re
 from Models.UserModel import User
@@ -9,16 +10,11 @@ import sqlite3
 import json
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import JWTManager, create_access_token
-from flask import Flask
-from flask_jwt import JWT
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'mysecretkey'  # Set your own secret key
-
-jwt = JWTManager(app)
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt, get_jwt_identity
+from datetime import timedelta
 
 class UserService: 
+    blacklisted_tokens = set()
     def get_userById(id):
         try:
             RegexValidation = r'^\s*\d+\s*$'
@@ -48,9 +44,9 @@ class UserService:
         
         except (NoResultFound, IntegrityError) as error:
             if isinstance(error, IntegrityError):
-                if 'sqlite3.IntegrityError) UNIQUE constraint failed: users.username' in error_message:
+                if 'sqlite3.IntegrityError) UNIQUE constraint failed: users.username' in error:
                     abort(400, "Username already exists. Please choose a different username.")
-                if '(sqlite3.IntegrityError) UNIQUE constraint failed: users.email' in error_message:
+                if '(sqlite3.IntegrityError) UNIQUE constraint failed: users.email' in error:
                     abort(400, 'That email already exists. Please choose a different email')
         except (ValueError) as valueError:
             abort(400, str(valueError))
@@ -58,7 +54,6 @@ class UserService:
             abort(400, str(res))
         abort(400, str(error))
        
-
 
     def is_valid_email(email):
         if not validate_email(email):
@@ -95,7 +90,7 @@ class UserService:
     
     # All conditions met, password is strong
         return password
-
+    
     def return_all_users():
 
         try:
@@ -145,19 +140,20 @@ class UserService:
         return credentialsKey
     
     def login(username, password):
-       
-        try:
-            UserService.is_valid_username(username)
-            UserService.is_valid_password(password)
-            user = UserService.authenticate(username, password)
-            if user:
-        # Generate the JWT token
-                access_token = create_access_token(identity=user.id)
-                return jsonify({'access_token': access_token})
-            else:
-                return jsonify({'message': 'Invalid credentials'}), 401
-        except(ValueError) as error:
-            abort(400, str(error))
+     try:
+        UserService.is_valid_username(username)
+        UserService.is_valid_password(password)
+        user = UserService.authenticate(username, password)
+        if user:
+            # Generate the JWT token with expiration time
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=10))
+            return jsonify({'access_token': access_token})
+        else:
+            return jsonify({'message': 'Invalid credentials'}), 401
+     except(ValueError) as error:
+        abort(400, str(error))
+
+
     def authenticate(username, password):
     ## check if exists 
     # if so return user
@@ -183,4 +179,27 @@ class UserService:
         # Handle database errors
         print(e)
      return None
+
+    @jwt_required()
+    def logout():
+        jti = get_jwt()['jti']
+        UserService.blacklisted_tokens.add(jti)
+        return jsonify({'message': 'Successfully logged out'})
     
+    
+    def retrieveAccountInfo():
+        user_id = get_jwt_identity()
+        try:
+            information = User.query.filter_by(id=user_id).first()
+            if information:
+            # Prepare the account information response
+                account_info = {
+                    'username': information.username,
+                    'email': information.email,
+                # Add other fields as needed
+                }
+                return jsonify(account_info), 200
+            else:
+                raise ValueError('No Info Found')
+        except ValueError as error:
+            return jsonify({'message': str(error)}), 400
