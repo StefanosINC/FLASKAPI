@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt, get_jwt_identity
 from datetime import timedelta
-
+import requests
 class UserService: 
     blacklisted_tokens = set()
     def get_userById(id):
@@ -105,6 +105,8 @@ class UserService:
             abort(400, str(error))
     def delete_user_by_Id(id):
         try:
+            
+        
             user = User.query.filter_by(id=id).first()
             if user:
                 db.session.delete(user)

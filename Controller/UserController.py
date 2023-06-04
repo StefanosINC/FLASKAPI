@@ -5,7 +5,7 @@ from Models.BlogModel import Blog
 from flask_jwt import jwt_required
 import re
 from Services.UserService import UserService
-from flask_jwt_extended import jwt_required, get_jwt_identity, unset_jwt_cookies
+from flask_jwt_extended import jwt_required
 
 user_blueprint = Blueprint('users', __name__)
 
@@ -47,3 +47,4 @@ def logout():
 @jwt_required()
 def retrieveAccountInfo():
     return UserService.retrieveAccountInfo()
+
