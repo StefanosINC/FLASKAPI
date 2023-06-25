@@ -1,5 +1,5 @@
 from flask_jwt_extended import JWTManager
-from Services.UserService import UserService
+from Components.UserComponent.UserService import UserService
 jwt = JWTManager()
 
 

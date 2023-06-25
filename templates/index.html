@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Home - Brand</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/bootstrap/css/bootstrap.min.css') }}?h=97fdfa31c346c923d830c27d591ac4aa">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/styles.min.css') }}?h=852b4a80ab8b0866a0e6eb73a4800f74">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/styles.min.css') }}?h=852b4a80ab8b0866a0e6eb73a4800f74">
+    
+  </head>
+  <body>
+    <!-- Start: Navbar Centered Links -->
+    <nav class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <span>VirusAI</span>
+        </a>
+        <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1">
+          <span class="visually-hidden">Toggle navigation</span>
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navcol-1">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item"><a class="nav-link active" href="{{ url_for('home.view_home') }}">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.view_features') }}">Features</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.view_integrations') }}">Integrations</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.view_pricing') }}">Pricing</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.view_contacts') }}">Contact Us</a></li>
+            
+          </ul>
+          <a class="btn btn-primary shadow" role="button" href="signup.html">Sign up</a>
+        </div>
+      </div>
+    </nav>
+    <!-- End: Navbar Centered Links -->
+
+    <header class="pt-5">
+      <!-- Start: Hero Clean Reverse -->
+      <div class="container pt-4 pt-xl-5">
+        <div class="row pt-5" style="width: 1000px;">
+          <div class="col-md-8 text-center text-md-start mx-auto">
+            <div class="text-center">
+              <h1 class="display-4 fw-bold mb-5">Threat Intelligence Integrated with AI</h1>
+              <p class="fs-5 text-muted mb-5">Interested in our daily newsletter where we talk about AI Security? Enter your email and subscribe today!</p>
+              <form class="d-flex justify-content-center flex-wrap" method="post" data-bs-theme="light">
+                <div class="shadow-lg mb-3">
+                  <input class="form-control" type="email" name="email" placeholder="Your Email">
+                </div>
+                <div class="shadow-lg mb-3">
+                  <button class="btn btn-primary" type="submit">Subscribe</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="col-12 col-lg-10 mx-auto">
+            <div class="text-center position-relative">
+              <img class="img-fluid" src="{{ url_for('static', filename='assets/img/illustrations/meeting.svg') }}?h=b2b77db3a1a563604c6861e63e9a1e7d" alt="Hero Image">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End: Hero Clean Reverse -->
+    </header>
+
+    <!-- Start: Footer Basic -->
+    <footer class="py-4 mt-auto bg-light">
+      <div class="container">
+        <div class="row align-items-center justify-content-center">
+          <div class="col-md-4 text-center">
+            <ul class="list-inline">
+              <li class="list-inline-item"><a href="/privacy.html">Privacy Policy</a></li>
+              <li class="list-inline-item"><a href="/terms.html">Terms of Service</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 text-center">
+            <span>All rights reserved © 2023 VirusAI</span>
+          </div>
+          <div class="col-md-4 text-center">
+            <ul class="list-inline social-buttons">
+              <li class="list-inline-item"><a class="btn btn-link" href="#"><i class="fab fa-twitter"></i></a></li>
+              <li class="list-inline-item"><a class="btn btn-link" href="#"><i class="fab fa-facebook"></i></a></li>
+              <li class="list-inline-item"><a class="btn btn-link" href="#"><i class="fab fa-linkedin"></i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <!-- End: Footer Basic -->
+
+    <script src="{{ url_for('static', filename='assets/bootstrap/js/bootstrap.min.js') }}?h=9d230f2071950cbf56e44c1e873aed03"></script>
+    <script src="{{ url_for('static', filename='assets/js/script.min.js') }}?h=2a25ce2a34abed0e5f8b784a40015dcd"></script>
+  </body>
+</html>
